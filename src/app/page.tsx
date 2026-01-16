@@ -9,11 +9,15 @@ export default function Page() {
   const { data } = useQuery(trpc.getWorkflows.queryOptions());
 
   const create = useMutation(trpc.createWorkflow.mutationOptions());
+  const testAi = useMutation(trpc.testAi.mutationOptions());
 
   return (
     <div>
       <Button onClick={() => create.mutate()} disabled={create.isPending}>
         Create Workflow
+      </Button>
+      <Button onClick={() => testAi.mutate()} disabled={testAi.isPending}>
+        Test AI
       </Button>
       {JSON.stringify(data)}
     </div>
