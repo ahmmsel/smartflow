@@ -1,22 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { caller, getQueryClient, trpc } from "@/trpc/server";
-import { Client } from "./client";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { requireAuth } from "@/lib/auth-utils";
+import { caller } from "@/trpc/server";
 
 export default async function Page() {
-  const queryClient = getQueryClient();
+  await requireAuth();
 
-  void queryClient.prefetchQuery(trpc.getUsers.queryOptions());
+  const users = await caller.getUsers();
 
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Button>Click Me</Button>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Client />
-        </Suspense>
-      </HydrationBoundary>
-    </div>
-  );
+  return <div>{JSON.stringify(users)}</div>;
 }
