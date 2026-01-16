@@ -1,10 +1,21 @@
-import { requireAuth } from "@/lib/auth-utils";
-import { caller } from "@/trpc/server";
+"use client";
 
-export default async function Page() {
-  await requireAuth();
+import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-  const users = await caller.getUsers();
+export default function Page() {
+  const trpc = useTRPC();
+  const { data } = useQuery(trpc.getWorkflows.queryOptions());
 
-  return <div>{JSON.stringify(users)}</div>;
+  const create = useMutation(trpc.createWorkflow.mutationOptions());
+
+  return (
+    <div>
+      <Button onClick={() => create.mutate()} disabled={create.isPending}>
+        Create Workflow
+      </Button>
+      {JSON.stringify(data)}
+    </div>
+  );
 }
