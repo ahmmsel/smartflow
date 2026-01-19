@@ -21,12 +21,13 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
 const menuItems = [
   {
     title: "Main",
     items: [
-      { title: "All Workflows", icon: FolderOpenIcon, url: "/workflows" },
+      { title: "Workflows", icon: FolderOpenIcon, url: "/workflows" },
       { title: "Credentials", icon: KeyIcon, url: "/credentials" },
       { title: "Executions", icon: HistoryIcon, url: "/executions" },
     ],
@@ -36,6 +37,8 @@ const menuItems = [
 export const AppSidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
+
+  const { hasActiveSubscription, isLoading } = useHasActiveSubscription();
 
   return (
     <Sidebar collapsible="icon">
@@ -69,21 +72,23 @@ export const AppSidebar = () => {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            tooltip="Upgrade to Pro"
-            className="gap-x-2 h-10 px-4"
-            onClick={() => {}}
-          >
-            <StarIcon className="size-4" />
-            <span>Upgrade to Pro</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        {!isLoading && !hasActiveSubscription && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Upgrade to Pro"
+              className="gap-x-2 h-10 px-4"
+              onClick={() => authClient.checkout({ slug: "pro" })}
+            >
+              <StarIcon className="size-4" />
+              <span>Upgrade to Pro</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
         <SidebarMenuItem>
           <SidebarMenuButton
             tooltip="Billing Portal"
             className="gap-x-2 h-10 px-4"
-            onClick={() => {}}
+            onClick={() => authClient.customer.portal()}
           >
             <CreditCardIcon className="size-4" />
             <span>Billing Portal</span>
