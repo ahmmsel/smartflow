@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../init";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import prisma from "@/lib/db";
+import { TRPCError } from "@trpc/server";
 
 export const appRouter = createTRPCRouter({
   testAi: protectedProcedure.mutation(async ({ ctx }) => {

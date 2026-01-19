@@ -11,8 +11,13 @@ export const executeAI = inngest.createFunction(
       system:
         "You are a helpful assistant that generates text based on user prompts.",
       prompt: "what is inngest and why is it useful?",
+      experimental_telemetry: {
+        isEnabled: true,
+        recordInputs: true,
+        recordOutputs: true,
+      },
     });
 
     return steps;
-  }
+  },
 );
