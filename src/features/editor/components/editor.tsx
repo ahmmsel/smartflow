@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   useSuspenseWorkflow,
+  useUpdateWorkflow,
   useUpdateWorkflowName,
 } from "@/features/workflows/hooks/use-workflows";
 import { SaveIcon } from "lucide-react";
@@ -36,7 +37,9 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import { nodeComponents } from "@/config/node-components";
-import { AddNodeButton } from "./add-node-button";
+import { AddNodeButton } from "@/features/editor/components/add-node-button";
+import { useAtomValue, useSetAtom } from "jotai";
+import { editorAtom } from "@/features/editor/store/atoms";
 
 export const EditorLoading = () => {
   return <LoadingView message="Loading Editor..." />;
@@ -49,6 +52,8 @@ export const EditorError = () => {
 export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
   const workflow = useSuspenseWorkflow(workflowId);
   const updateWorkflowName = useUpdateWorkflowName();
+  const editor = useAtomValue(editorAtom);
+  const saveWorkflow = useUpdateWorkflow();
 
   const [workflowNameIsEditing, setWorkflowNameIsEditing] = useState(false);
   const [workflowName, setWorkflowName] = useState(workflow.data.name);
@@ -96,6 +101,19 @@ export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
     }
   };
 
+  const handleSaveWorkflow = () => {
+    if (!editor) return;
+
+    const nodes = editor.getNodes();
+    const edges = editor.getEdges();
+
+    saveWorkflow.mutate({
+      id: workflowId,
+      nodes,
+      edges,
+    });
+  };
+
   return (
     <header className="flex items-center shrink-0 h-14 gap-2 border-b px-4 bg-background">
       <SidebarTrigger />
@@ -131,7 +149,11 @@ export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="ml-auto">
-        <Button size="sm" onClick={() => {}} disabled>
+        <Button
+          size="sm"
+          onClick={handleSaveWorkflow}
+          disabled={saveWorkflow.isPending}
+        >
           <SaveIcon />
           Save
         </Button>
@@ -142,6 +164,7 @@ export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
 
 export const Editor = ({ workflowId }: { workflowId: string }) => {
   const workflow = useSuspenseWorkflow(workflowId);
+  const setEditor = useSetAtom(editorAtom);
 
   const [nodes, setNodes] = useState<Node[]>(workflow.data.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.data.edges);
@@ -170,10 +193,14 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onInit={setEditor}
         proOptions={{
           hideAttribution: true,
         }}
         nodeTypes={nodeComponents}
+        snapGrid={[10, 10]}
+        snapToGrid
+        panOnScroll
         fitView
       >
         <Background />
