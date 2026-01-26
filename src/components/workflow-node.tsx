@@ -40,9 +40,9 @@ export const WorkflowNode = ({
           className="max-w-50 text-center"
           isVisible
         >
-          <p className="font-medium">{name}</p>
+          <p className="font-medium text-sm">{name}</p>
           {!!description && (
-            <p className="text-sm text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {description}
             </p>
           )}
