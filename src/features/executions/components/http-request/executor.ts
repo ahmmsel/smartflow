@@ -6,6 +6,7 @@ type HttpRequestData = {
   endpoint?: string;
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  variableName: string;
 };
 
 export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
@@ -18,6 +19,12 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     throw new NonRetriableError('HTTP Request node requires an "endpoint"');
   }
 
+  if (!data.variableName) {
+    throw new NonRetriableError(
+      'HTTP Request node requires a "variableName" to store the response',
+    );
+  }
+
   const result = await step.run("http-request", async () => {
     const endpoint = data.endpoint!;
     const method = data.method || "GET";
@@ -25,11 +32,15 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     const options = {
       method: method,
       data: undefined as unknown,
+      headers: undefined as Record<string, string> | undefined,
     };
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
       if (data.body) {
         options.data = data.body;
+        options.headers = {
+          "Content-Type": "application/json",
+        };
       }
     }
 
@@ -53,13 +64,17 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
       );
     }
 
-    return {
-      ...context,
+    const responsePayload = {
       httpResponse: {
         data: response.data,
         status: response.status,
         statusText: response.statusText,
       },
+    };
+
+    return {
+      ...context,
+      [data.variableName]: responsePayload,
     };
   });
 
