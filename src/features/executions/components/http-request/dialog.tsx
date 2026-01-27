@@ -34,6 +34,13 @@ const formSchema = z.object({
   endpoint: z.url("Please enter a valid URL."),
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   body: z.string().optional(),
+  variableName: z
+    .string()
+    .min(1, "Variable name is required")
+    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+      message:
+        "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores.",
+    }),
 });
 
 export type HttpRequestFormValues = z.infer<typeof formSchema>;
@@ -52,7 +59,12 @@ export const HttpRequestDialog = ({
   defaultValues,
 }: Props) => {
   const form = useForm<HttpRequestFormValues>({
-    defaultValues: defaultValues,
+    defaultValues: {
+      method: defaultValues?.method || "GET",
+      endpoint: defaultValues?.endpoint || "",
+      body: defaultValues?.body || "",
+      variableName: defaultValues?.variableName || "",
+    },
     resolver: zodResolver(formSchema),
   });
 
@@ -84,6 +96,23 @@ export const HttpRequestDialog = ({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8 mt-4"
           >
+            <FormField
+              control={form.control}
+              name="variableName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Variable Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="MyVariable" />
+                  </FormControl>
+                  <FormDescription>
+                    Use this variable name to reference the response data in
+                    subsequent nodes.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="method"
