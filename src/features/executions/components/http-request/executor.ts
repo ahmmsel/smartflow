@@ -5,9 +5,9 @@ import Handlebars from "handlebars";
 import { httpRequestChannel } from "@/inngest/channels/http-request";
 
 type HttpRequestData = {
-  variableName: string;
-  endpoint: string;
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  variableName?: string;
+  endpoint?: string;
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
 };
 
@@ -30,42 +30,40 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     }),
   );
 
-  if (!data.endpoint) {
-    await publish(
-      httpRequestChannel().status({
-        nodeId,
-        status: "error",
-      }),
-    );
-    throw new NonRetriableError('HTTP Request node requires an "endpoint"');
-  }
-
-  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(data.method)) {
-    await publish(
-      httpRequestChannel().status({
-        nodeId,
-        status: "error",
-      }),
-    );
-    throw new NonRetriableError(
-      `HTTP Request node has invalid "method": ${data.method}`,
-    );
-  }
-
-  if (!data.variableName) {
-    await publish(
-      httpRequestChannel().status({
-        nodeId,
-        status: "error",
-      }),
-    );
-    throw new NonRetriableError(
-      'HTTP Request node requires a "variableName" to store the response',
-    );
-  }
-
   try {
     const result = await step.run("http-request", async () => {
+      if (!data.endpoint) {
+        await publish(
+          httpRequestChannel().status({
+            nodeId,
+            status: "error",
+          }),
+        );
+        throw new NonRetriableError('HTTP Request node requires an "endpoint"');
+      }
+
+      if (!data.variableName) {
+        await publish(
+          httpRequestChannel().status({
+            nodeId,
+            status: "error",
+          }),
+        );
+        throw new NonRetriableError(
+          'HTTP Request node requires a "variableName" to store the response',
+        );
+      }
+
+      if (!data.method) {
+        await publish(
+          httpRequestChannel().status({
+            nodeId,
+            status: "error",
+          }),
+        );
+        throw new NonRetriableError('HTTP Request node requires a "method"');
+      }
+
       const endpoint = Handlebars.compile(data.endpoint)(context);
       const method = data.method;
 
