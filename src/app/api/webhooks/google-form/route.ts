@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
         googleForm: formData,
       },
     });
+
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Error handling Google Form webhook:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
