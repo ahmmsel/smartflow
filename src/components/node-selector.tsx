@@ -51,6 +51,12 @@ const executionNodes: NodeTypeOption[] = [
     description: "Make an HTTP request to an external API",
     icon: GlobeIcon,
   },
+  {
+    type: NodeType.GEMINI,
+    label: "Gemini",
+    description: "Use Gemini to generate content or answer questions",
+    icon: "/logos/gemini.svg",
+  },
 ];
 
 interface NodeSelectorProps {
